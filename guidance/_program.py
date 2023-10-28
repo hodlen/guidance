@@ -500,7 +500,7 @@ class Program:
     
     @property
     def marked_text(self):
-        if self._executor is not None:
+        if self._executor is not None and self._executor.executing:
             return self._variables["@raw_prefix"]
         else:
             return self._text
