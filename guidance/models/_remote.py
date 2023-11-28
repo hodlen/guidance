@@ -80,7 +80,7 @@ class Remote(Local):
         }
         self._shared_state["not_running_stream"].set()
 
-        self.max_calls = 10
+        self.max_calls = 100
         self.timeout = 50.1
 
     def _running_stream(self):
