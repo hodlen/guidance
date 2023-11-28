@@ -1,3 +1,4 @@
+from sys import stderr
 import numpy as np
 from ordered_set import OrderedSet
 from ._grammar import Join, Select, Terminal, Null, Byte, ByteRange
@@ -406,16 +407,27 @@ class EarleyCommitParser:
     
     def get_captures(self):
         root_node = self.parse_tree()
+        data = {}
+        log_prob_data = {}
         if root_node is not None:
             # parse complete, so we can get the captures
-            data = {}
-            log_prob_data = {}
-            self._record_captures(root_node, data, log_prob_data)
+            self._record_captures_from_root(root_node, data, log_prob_data)
             return data, log_prob_data
         # compute on partially parsed tree
-        return {}, {}
+        self._record_captures_partial(data, log_prob_data)
+        return data, log_prob_data
 
-    def _record_captures(self, initial_item, data, log_prob_data):
+    def _record_captures_partial(self, data, log_prob_data):
+        byte_data = self.bytes
+        used_names = set()
+
+        for item in self.state_sets[self.state_set_pos]:
+            cname = item.node.capture_name
+            if cname is not None and cname not in used_names:
+                data[cname] = byte_data[item.start:self.state_set_pos]
+                log_prob_data[cname] = item.log_prob
+
+    def _record_captures_from_root(self, initial_item, data, log_prob_data):
         byte_data = self.bytes
         stack = [(initial_item, 0)]
         used_names = set() # track which capture names have been used so self-recursive children don't overwrite their parents
