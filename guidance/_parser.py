@@ -419,13 +419,16 @@ class EarleyCommitParser:
 
     def _record_captures_partial(self, data, log_prob_data):
         byte_data = self.bytes
-        used_names = set()
 
         for item in self.state_sets[self.state_set_pos]:
             cname = item.node.capture_name
-            if cname is not None and cname not in used_names:
-                data[cname] = byte_data[item.start:self.state_set_pos]
-                log_prob_data[cname] = item.log_prob
+            if cname is None:
+                continue
+            captured_value = byte_data[item.start:self.earliest_hidden_start()]
+            if captured_value.endswith(b'<'):
+                print("WARNING: Captured value ends with '<' which is a special character in the parser!", file=stderr)
+            data[cname] = captured_value
+            log_prob_data[cname] = item.log_prob
 
     def _record_captures_from_root(self, initial_item, data, log_prob_data):
         byte_data = self.bytes

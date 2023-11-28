@@ -388,13 +388,11 @@ class Local(Model):
                 break # we are done!
             else:
                 generated_pos += len(new_bytes)
-                
-                # capture the named groups from the (partial) parse tree
-                data, log_prob_data = parser.get_captures()
-
                 # yeild the snippet of text created by the next token
                 out = new_bytes[hidden_count:]
                 if len(out) > 0:
+                    # capture the named groups from the (partial) parse tree, 
+                    data, log_prob_data = parser.get_captures()
                     yield out, not is_forced, new_bytes_log_prob, data, log_prob_data, token_count - last_token_count # note that we don't capture groups until a complete parse right now...
                     last_token_count = token_count
                     hidden_count = 0
